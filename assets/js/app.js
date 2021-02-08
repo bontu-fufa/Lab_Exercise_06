@@ -6,6 +6,7 @@ const taskList = document.querySelector('.collection'); //The UL
 const clearBtn = document.querySelector('.clear-tasks'); //the all task clear button
 
 const reloadIcon = document.querySelector('.fa'); //the reload button at the top navigation 
+const orderChoice = document.querySelector('#order-choice'); // order selection 
 
 //DB variable 
 
@@ -63,6 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // create a new object with the form info
         let newTask = {
             taskname: taskInput.value,
+            date: Date.now()
         }
 
         // Insert the object into the database 
@@ -164,6 +166,61 @@ document.addEventListener('DOMContentLoaded', () => {
         tasks.clear();
         displayTaskList();
         console.log("Tasks Cleared !!!");
+    }
+
+    // date - order event listener
+    orderChoice.addEventListener('change', order);
+
+    function order() {
+        if (orderChoice.value == 'ascend' ) ascending();
+        if (orderChoice.value == 'descend' ) descending();
+        
+    }
+
+    function ascending(){
+        // clear previous display
+        while (taskList.firstChild) {   
+            taskList.removeChild(taskList.firstChild);
+        }
+
+        let objectStore = DB.transaction('tasks').objectStore('tasks');
+        let datesIndex = objectStore.index('date');
+    
+
+        datesIndex.openCursor().onsuccess = function(e) {
+            // assign the current cursor
+            let cursor = e.target.result;
+
+            if (cursor) {
+
+                // Create an li element when the user adds a task 
+                const li = document.createElement('li');
+                //add Attribute for delete 
+                li.setAttribute('data-task-id', cursor.value.id);
+                // Adding a class
+                li.className = 'collection-item';
+                // Create text node and append it 
+                li.appendChild(document.createTextNode(cursor.value.taskname));
+                // Create new element for the link 
+                const link = document.createElement('a');
+                // Add class and the x marker for a 
+                link.className = 'delete-item secondary-content';
+                
+            
+                link.innerHTML = `
+                <i class="fa fa-remove"></i>
+                &nbsp;
+                <a href="../edit.html?id=${cursor.value.id}"><i class="fa fa-edit"></i> </a>
+                `;
+                // Append link to li
+                li.appendChild(link);
+                // Append to UL 
+                taskList.appendChild(li);
+                cursor.continue();
+            }
+        }
+        
+
     }
 
 

@@ -1,3 +1,7 @@
 i {
     color: red;
 }
+#order-choice{
+    display: block;
+    width: 20%;
+}
